@@ -295,3 +295,4 @@ brief explanation*
 **answer:**
 > The main issue is that your `aggregate` lambda doesn’t return the updated accumulator — the last line `acc` just returns the old value. Also, `acc` can be `null` for the first element, so you need to initialize it (`acc ?: 0`). Finally, your `else` shouldn’t have a condition; use `else if` or `when`. Fixing these will prevent the `NullPointerException` and incorrect aggregation.
 
+

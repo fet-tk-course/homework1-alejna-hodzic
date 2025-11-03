@@ -35,6 +35,8 @@ abstract class Inzenjer(val FirstAndLastName: String,
     open fun PrintEngineerInfo () {
         println(this.EngineerInfo())
     }
+
+    abstract fun efficiencyScore() : Int
 }
 
 class SoftverskiInzenjer(ImeIPrezime: String,
@@ -65,6 +67,8 @@ class SoftverskiInzenjer(ImeIPrezime: String,
     override fun PrintEngineerInfo(){
         println(this.Info())
     }
+
+    override fun efficiencyScore() : Int = this.NumberOfProjects * this.YearsOfExperience
 }
 
 class InzenjerElektrotehnike(ImeIPrezime: String,
@@ -94,6 +98,8 @@ class InzenjerElektrotehnike(ImeIPrezime: String,
     override fun PrintEngineerInfo(){
         println(this.Info())
     }
+
+    override fun efficiencyScore() : Int = this.NumberOfCertificates * this.YearsOfExperience
 }
 
 fun GroupsViaExpertise (Engineers: List<Inzenjer>) : Map<String, MutableList<String>>{
@@ -146,6 +152,36 @@ fun MostExperiencedEngineers(Engineers: List<Inzenjer>) : Map<String, Inzenjer> 
     return mapOf(SoftwareEngineer.Title to SoftwareEngineer, ElectricalEngineer.Title to ElectricalEngineer)
 }
 
+fun MostEfficientEngineer(Engineers: List<Inzenjer>) : MutableMap<Inzenjer, Int> {
+    val SoftwareEngs = mutableListOf<Inzenjer>()
+    val ElectricalEngs = mutableSetOf<Inzenjer>()
+    for (Eng in Engineers){
+        if (Eng.Title == SoftwareEngineer){
+            SoftwareEngs.add(Eng)
+        } else if (Eng.Title == ElectricalEngineer) {
+            ElectricalEngs.add(Eng)
+        }
+    }
+
+    val SoftverInzenjer= SoftwareEngs.reduce { Accumulator, Eng ->
+        if (Accumulator.YearsOfExperience * (Accumulator as SoftverskiInzenjer).NumberOfProjects < Eng.YearsOfExperience * (Eng as SoftverskiInzenjer).NumberOfProjects) {
+            Eng
+        } else Accumulator }
+    val ElIng = ElectricalEngs.reduce{ Accumulator, Eng ->
+        if (Accumulator.YearsOfExperience * (Accumulator as InzenjerElektrotehnike).NumberOfCertificates < Eng.YearsOfExperience * (Eng as InzenjerElektrotehnike).NumberOfCertificates){
+            Eng
+        } else Accumulator
+    }
+
+    var res = mutableMapOf<Inzenjer, Int>()
+    if (SoftverInzenjer.YearsOfExperience * (SoftverInzenjer as SoftverskiInzenjer).NumberOfProjects < ElIng.YearsOfExperience * (ElIng as InzenjerElektrotehnike).NumberOfCertificates){
+        res.put(ElIng,  ElIng.YearsOfExperience * (ElIng as InzenjerElektrotehnike).NumberOfCertificates)
+    } else {
+        res.put(SoftverInzenjer,  SoftverInzenjer.YearsOfExperience * (SoftverInzenjer as SoftverskiInzenjer).NumberOfProjects)
+    }
+
+    return res
+}
 
 fun NumberOfProjectsAndCertificates(Engineers : List<Inzenjer>) : Int {
 
@@ -232,5 +268,11 @@ fun main() {
     println("Total number of projects and certificates amongst forwarded engineers is $TotalProjsAndCertificates")
     if (TotalProjsAndCertificates != 35) {
         println("Finding total number of projects and certificates using aggregate function went wrong!")
+    }
+    println("\n")
+
+    var mostEff = MostEfficientEngineer(Engineers)
+    for ((key, value) in mostEff) {
+        println("Najefikasniji inzenjer: ${key.Identity()} (score $value)")
     }
 }
